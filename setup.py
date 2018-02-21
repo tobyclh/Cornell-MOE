@@ -202,7 +202,7 @@ class InstallCppComponents(install):
         proc.wait()
 
         # Compile everything
-        proc = subprocess.Popen(["make"], cwd=local_build_dir, env=env)
+        proc = subprocess.Popen(["make", '-j16'], cwd=local_build_dir, env=env)
         proc.wait()
 
         GPP_so = os.path.join(local_build_dir, 'GPP.so')
