@@ -72,11 +72,49 @@ if (DEFINED MOE_PYTHON_ADDITIONAL_VERSIONS)
 endif()
 
 #### External dependencies
-find_package(PythonLibs REQUIRED)
-find_package(Boost 1.51 COMPONENTS python REQUIRED)
+find_package(PythonLibs 3 REQUIRED) #force to use python3 because its 2018 now
 
+string(SUBSTRING ${PYTHONLIBS_VERSION_STRING} 0 1 PYTHON_MAJOR)
+string(SUBSTRING ${PYTHONLIBS_VERSION_STRING} 2 1 PYTHON_MINOR)
 include_directories(SYSTEM ${PYTHON_INCLUDE_DIRS})
+##${BOOST_FOUND} = false
+##if (NOT ${BOOST_FOUND})
+if (${PYTHON_MAJOR} MATCHES "3")
+    message(STATUS "Searching for Boost Python 3 component")
+    #check e.g. libboost_python-py36.so first
+    find_package(Boost COMPONENTS python-py${PYTHON_MAJOR}${PYTHON_MINOR})
+    set(BOOST_FOUND ${Boost_PYTHON-PY}${PYTHON_MAJOR}${PYTHON_MINOR}"_FOUND")
+    if (NOT ${BOOST_FOUND})
+        find_package(Boost COMPONENTS python-py36)
+        set(BOOST_FOUND ${Boost_PYTHON-PY36_FOUND})
+    endif()
+    if (NOT ${BOOST_FOUND})
+        find_package(Boost COMPONENTS python-py35)
+        set(BOOST_FOUND ${Boost_PYTHON-PY35_FOUND})
+    endif()
+
+    if (NOT ${BOOST_FOUND})
+        find_package(Boost COMPONENTS python-py34)
+        set(BOOST_FOUND ${Boost_PYTHON-PY34_FOUND})
+    endif()
+    if (NOT ${BOOST_FOUND})
+        #check libboost_python3.so
+        find_package(Boost COMPONENTS python3 REQUIRED)
+    endif()
+
+
+else()
+    message(STATUS "Searching for Boost Python 2 component")
+    find_package(Boost 1.51 COMPONENTS python REQUIRED)
+endif()
+##endif()
+set(Boost_INCLUDE_DIRS /home/toby/anaconda3/include)
+set(Boost_LIBRARIES /home/toby/anaconda3/lib)    
+message(STATUS "HEY Boost_INCLUDE_DIRS : " ${Boost_INCLUDE_DIRS})
+message(STATUS "HEY Boost_LIBRARIES : " ${Boost_LIBRARIES})
 include_directories(${Boost_INCLUDE_DIRS})
+
+
 
 #### Sources
 # Lists of source files that are dependencies. Currently we have one group for "core" functionality,
