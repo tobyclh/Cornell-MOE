@@ -19,8 +19,8 @@ from moe.optimal_learning.python.python_version.optimization import GradientDesc
 from moe.optimal_learning.python.python_version.optimization import GradientDescentOptimizer as pyGradientDescentOptimizer
 from moe.optimal_learning.python.python_version.optimization import multistart_optimize as multistart_optimize
 
-import bgo_methods
-import synthetic_functions
+from . import bgo_methods
+from . import synthetic_functions
 
 # arguments for calling this script:
 # python main.py [obj_func_name] [method_name] [num_to_sample] [job_id]
@@ -49,10 +49,10 @@ num_initial_points = int(objective_func._num_init_pts)
 num_fidelity = objective_func._num_fidelity
 
 inner_search_domain = pythonTensorProductDomain([ClosedInterval(objective_func._search_domain[i, 0], objective_func._search_domain[i, 1])
-                                                 for i in xrange(objective_func._search_domain.shape[0]-num_fidelity)])
+                                                 for i in range(objective_func._search_domain.shape[0]-num_fidelity)])
 cpp_search_domain = cppTensorProductDomain([ClosedInterval(bound[0], bound[1]) for bound in objective_func._search_domain])
 cpp_inner_search_domain = cppTensorProductDomain([ClosedInterval(objective_func._search_domain[i, 0], objective_func._search_domain[i, 1])
-                                                  for i in xrange(objective_func._search_domain.shape[0]-num_fidelity)])
+                                                  for i in range(objective_func._search_domain.shape[0]-num_fidelity)])
 
 # get the initial data
 init_pts = np.zeros((objective_func._num_init_pts, objective_func._dim))
@@ -107,12 +107,12 @@ report_point = multistart_optimize(ps_mean_opt, report_point, num_multistarts = 
 report_point = report_point.ravel()
 report_point = np.concatenate((report_point, np.ones(objective_func._num_fidelity)))
 
-print "best so far in the initial data {0}".format(true_value_init[np.argmin(true_value_init[:,0])][0])
+print("best so far in the initial data {0}".format(true_value_init[np.argmin(true_value_init[:,0])][0]))
 capital_so_far = 0.
-for n in xrange(num_iteration):
-    print method + ", {0}th job, {1}th iteration, func={2}, q={3}".format(
+for n in range(num_iteration):
+    print(method + ", {0}th job, {1}th iteration, func={2}, q={3}".format(
             job_id, n, obj_func_name, num_to_sample
-    )
+    ))
     time1 = time.time()
     if method == 'KG':
         discrete_pts_list = []
@@ -156,26 +156,26 @@ for n in xrange(num_iteration):
         next_points, voi = bgo_methods.gen_sample_from_qei(cpp_gp_loglikelihood.models[0], cpp_search_domain,
                                                            cpp_sgd_params_kg, num_to_sample, num_mc=2 ** 10)
     else:
-        print method + str(" not supported")
+        print(method + str(" not supported"))
         sys.exit(0)
 
-    print method + " takes "+str((time.time()-time1))+" seconds"
+    print(method + " takes "+str((time.time()-time1))+" seconds")
     #time1 = time.time()
-    print method + " suggests points:"
-    print next_points
+    print(method + " suggests points:")
+    print(next_points)
 
     sampled_points = [SamplePoint(pt, objective_func.evaluate(pt)[observations], objective_func._sample_var) for pt in next_points]
 
     #print "evaluating takes "+str((time.time()-time1)/60)+" mins"
     capitals = np.ones(num_to_sample)
-    for i in xrange(num_to_sample):
+    for i in range(num_to_sample):
         if num_fidelity > 0:
             value = 1.0
-            for j in xrange(num_fidelity):
+            for j in range(num_fidelity):
                 value *= next_points[i, dim-1-j]
             capitals[i] = value
     capital_so_far += np.amax(capitals)
-    print "evaluating takes capital " + str(capital_so_far) +" so far"
+    print("evaluating takes capital " + str(capital_so_far) +" so far")
 
     # retrain the model
     time1 = time.time()
@@ -183,7 +183,7 @@ for n in xrange(num_iteration):
     cpp_gp_loglikelihood.add_sampled_points(sampled_points)
     cpp_gp_loglikelihood.train()
 
-    print "retraining the model takes "+str((time.time()-time1))+" seconds"
+    print("retraining the model takes "+str((time.time()-time1))+" seconds")
     time1 = time.time()
 
     # report the point
@@ -214,7 +214,7 @@ for n in xrange(num_iteration):
     report_point = np.concatenate((report_point, np.ones(objective_func._num_fidelity)))
 
 
-    print "the recommended point: ",
-    print report_point
-    print "recommending the point takes "+str((time.time()-time1))+" seconds"
-    print method + ", VOI {0}, best so far {1}".format(voi, objective_func.evaluate_true(report_point)[0])
+    print("the recommended point: ", end=' ')
+    print(report_point)
+    print("recommending the point takes "+str((time.time()-time1))+" seconds")
+    print(method + ", VOI {0}, best so far {1}".format(voi, objective_func.evaluate_true(report_point)[0]))

@@ -141,7 +141,7 @@ class CIFAR10(object):
                                                                    batch_size=batch_size),
                                                       steps=x_test.shape[0] // batch_size)
 
-                print('Model Accuracy = %.2f' % (evaluation[1]))
+                print(('Model Accuracy = %.2f' % (evaluation[1])))
                 return 1-evaluation[1]
         except Exception as e:
             return e
